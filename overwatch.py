@@ -90,51 +90,57 @@ class overwatch:
 
     def auto_list_channels(self, search=""):
         self.auto_type = 1
+        # Recent channels
         recent = sorted([k for k in self.recent_channels if k.startswith(search)], key=lambda k: self.recent_channels[k])
-        full = sorted([k for k in self.channels if k not in recent and k.startswith(search)])
-        self.auto_list.extend(recent + full)
+        # Rest of channels
+        rest = sorted([k for k in self.channels if k not in recent and k.startswith(search)])
+        self.auto_list.extend(recent + rest)
 
     def auto_list_users(self, channel, search=""):
         self.auto_type = 2
         p = re.compile(search, re.I)
+        # Recently seen nicks from this channel
         recent = sorted([k for k, v in self.recent_users.items() if bool(p.match(k)) and v[0] == channel], key=lambda k: self.recent_users[k][1])
+        # Get rest of nicks from target channel
         channel_context = xchat.find_context(channel=channel)
         if channel_context:
-            channel_context.set()
+            channel_context.get_info("channel")  # Without a get_info call, get_list fails
             full = sorted([x.nick for x in channel_context.get_list("users") if bool(p.match(x.nick)) and x.nick not in recent])
-            print full, [x.nick for x in channel_context.get_list("users")]
             self.auto_list.extend(recent + full)
         else:
             self.auto_list.extend(recent)
 
     def pressed_tab(self, modifiers):
-        words = self.buffer.get_input().strip().split(" ", 2)
-        num = len(words)
+        text = self.buffer.get_input().strip()
+        word = text.split(" ", 1)
+        num = len(word)
+
         if self.auto_first:
             self.auto_first = False
             if num == 1:
                 # Tab to next channel
-                if words[0] in self.channels:
+                if word[0] in self.channels:
                     self.auto_list_channels()
                 # Complete channel name
-                elif words[0] and not words[0].startswith("#"):
-                    self.auto_list_channels("#" + words[0])
+                elif word[0] and not word[0].startswith("#"):
+                    self.auto_list_channels("#" + word[0])
                 # Search partial chanel
                 else:
-                    self.auto_list_channels(words[0])
-            # Search nicks
-            else:
-                if words[1]:
-                    self.auto_list_users(words[0], words[1])
+                    self.auto_list_channels(word[0])
+            # Search nick
+            elif num == 2:
+                (line, nick) = text.rsplit(" ", 1)
+                self.auto_list_users(word[0], nick)
 
         if self.auto_list:
             # Complete channel
             if self.auto_type == 1:
-                rest = len(words) > 1 and words[1:].join(" ") or ""
+                rest = num > 1 and word[1] or ""
                 self.buffer.set_input(self.auto_list[0] + " " + rest)
             # Complete nick
             else:
-                rest = self.buffer.set_input("%s %s%s %s" % (words[0], self.auto_list[0], xchat.get_prefs("completion_suffix"), len(words) > 2 and words[2:].join(" ") or ""))
+                line = text.rsplit(" ", 1)[0]
+                self.buffer.set_input("%s %s%s" % (line, self.auto_list[0], xchat.get_prefs("completion_suffix")))
             self.auto_list.rotate(1)
 
         return xchat.EAT_ALL
