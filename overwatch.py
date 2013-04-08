@@ -110,6 +110,12 @@ class overwatch:
         else:
             self.auto_list.extend(recent)
 
+    def auto_clear(self):
+        if not self.auto_first:
+            self.auto_first = True
+            self.auto_list.clear()
+            self.auto_type = None
+
     def pressed_tab(self, modifiers):
         text = self.buffer.get_input().strip()
         word = text.split(" ", 1)
@@ -135,8 +141,7 @@ class overwatch:
         if self.auto_list:
             # Complete channel
             if self.auto_type == 1:
-                rest = num > 1 and word[1] or ""
-                self.buffer.set_input(self.auto_list[0] + " " + rest)
+                self.buffer.set_input(self.auto_list[0] + " " + (num > 1 and word[1] or ""))
             # Complete nick
             else:
                 line = text.rsplit(" ", 1)[0]
@@ -153,10 +158,7 @@ class overwatch:
 
     def pressed_any(self, key, modifiers, word):
         self.last_action = time()
-        if not self.auto_first:
-            self.auto_first = True
-            self.auto_list.clear()
-            self.auto_type = None
+        self.auto_clear()
         return xchat.EAT_NONE
 
     def on_event(self, channel, event, word, word_eol):
@@ -171,6 +173,7 @@ class overwatch:
             line = self.buffer.get_input()
             if not line or line == self.last_channel + " ":
                 self.buffer.set_input(channel + " ")
+                self.auto_clear()
         self.last_channel = channel
 
     def on_send(self, word, word_eol):
