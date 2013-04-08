@@ -10,10 +10,11 @@ from time import time
 import re
 from collections import deque
 
-SHIFT = 1
-CTRL = 4
-ALT = 8
+MOD_SHIFT = 1
+MOD_CTRL = 4
+MOD_ALT = 8
 
+SHIFT = 65505
 TAB = 0xFF09
 LEFT_TAB = 0xFE20
 ENTER = 0xFF0D
@@ -166,8 +167,9 @@ class overwatch:
         return xchat.EAT_NONE
 
     def pressed_any(self, key, modifiers, word):
-        self.last_action = time()
-        self.auto_clear()
+        if key != SHIFT:
+            self.last_action = time()
+            self.auto_clear()
         return xchat.EAT_NONE
 
     def on_event(self, channel, event, word, word_eol):
