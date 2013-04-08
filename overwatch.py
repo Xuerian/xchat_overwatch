@@ -126,7 +126,6 @@ class overwatch:
         num = len(word)
 
         if self.auto_first:
-            self.auto_first = False
             if num == 1:
                 # Tab to next channel
                 if word[0] in self.channels:
@@ -141,6 +140,12 @@ class overwatch:
             elif num == 2:
                 (line, nick) = text.rsplit(" ", 1)
                 self.auto_list_users(word[0], nick)
+        elif self.auto_list:
+            if modifiers == 0:
+                self.auto_list.rotate(-1)
+            elif modifiers == 1:
+                self.auto_list.rotate(1)
+
 
         if self.auto_list:
             # Complete channel
@@ -150,7 +155,7 @@ class overwatch:
             else:
                 line = text.rsplit(" ", 1)[0]
                 self.buffer.set_input("%s %s%s " % (line, self.auto_list[0], xchat.get_prefs("completion_suffix")))
-            self.auto_list.rotate(-1)
+            self.auto_first = False
 
         return xchat.EAT_ALL
 
