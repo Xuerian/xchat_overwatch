@@ -180,8 +180,8 @@ class overwatch:
         self.recent_channels[channel] = now = time()
         self.recent_users[word[0]] = (channel, time())
         # Update prompt
-        if now - self.last_action > 5:
-            line = self.buffer.get_input()
+        line = self.buffer.get_input()
+        if now - self.last_action > 15 or (not line and now - self.last_action > 5):
             if not line or line == self.last_channel + " ":
                 self.buffer.set_input(channel + " ")
                 self.auto_clear()
