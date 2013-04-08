@@ -161,7 +161,7 @@ class overwatch:
 
     def pressed_enter(self, modifiers):
         if self.last_channel and not self.buffer.get_input():
-            self.buffer.set_input(self.last_channel + " ")
+            self.pressed_tab(0)
             return xchat.EAT_ALL
         return xchat.EAT_NONE
 
