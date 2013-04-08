@@ -91,21 +91,25 @@ class overwatch:
     def auto_list_channels(self, search=""):
         self.auto_type = 1
         # Recent channels
-        recent = sorted([k for k in self.recent_channels if k.startswith(search)], key=lambda k: self.recent_channels[k])
+        recent = [k for k in self.recent_channels if k.startswith(search)]
+        recent.sort(reverse=True, key=lambda k: self.recent_channels[k])
         # Rest of channels
-        rest = sorted([k for k in self.channels if k not in recent and k.startswith(search)])
+        rest = [k for k in self.channels if k not in recent and k.startswith(search)]
+        rest.sort()
         self.auto_list.extend(recent + rest)
 
     def auto_list_users(self, channel, search=""):
         self.auto_type = 2
         p = re.compile(search, re.I)
         # Recently seen nicks from this channel
-        recent = sorted([k for k, v in self.recent_users.items() if bool(p.match(k)) and v[0] == channel], key=lambda k: self.recent_users[k][1])
+        recent = [k for k, v in self.recent_users.items() if bool(p.match(k)) and v[0] == channel]
+        recent.sort(reverse=True, key=lambda k: self.recent_users[k][1])
         # Get rest of nicks from target channel
         channel_context = xchat.find_context(channel=channel)
         if channel_context:
             channel_context.get_info("channel")  # Without a get_info call, get_list fails
-            full = sorted([x.nick for x in channel_context.get_list("users") if bool(p.match(x.nick)) and x.nick not in recent])
+            full = [x.nick for x in channel_context.get_list("users") if bool(p.match(x.nick)) and x.nick not in recent]
+            full.sort()
             self.auto_list.extend(recent + full)
         else:
             self.auto_list.extend(recent)
@@ -146,7 +150,7 @@ class overwatch:
             else:
                 line = text.rsplit(" ", 1)[0]
                 self.buffer.set_input("%s %s%s " % (line, self.auto_list[0], xchat.get_prefs("completion_suffix")))
-            self.auto_list.rotate(1)
+            self.auto_list.rotate(-1)
 
         return xchat.EAT_ALL
 
