@@ -100,7 +100,7 @@ class overwatch:
 
     def auto_list_users(self, channel, search=""):
         self.auto_type = 2
-        p = re.compile(search, re.I)
+        p = re.compile(re.escape(search), re.I)
         # Recently seen nicks from this channel
         recent = [k for k, v in self.recent_users.items() if bool(p.match(k)) and v[0] == channel]
         recent.sort(reverse=True, key=lambda k: self.recent_users[k][1])
