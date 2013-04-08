@@ -145,7 +145,7 @@ class overwatch:
             # Complete nick
             else:
                 line = text.rsplit(" ", 1)[0]
-                self.buffer.set_input("%s %s%s" % (line, self.auto_list[0], xchat.get_prefs("completion_suffix")))
+                self.buffer.set_input("%s %s%s " % (line, self.auto_list[0], xchat.get_prefs("completion_suffix")))
             self.auto_list.rotate(1)
 
         return xchat.EAT_ALL
