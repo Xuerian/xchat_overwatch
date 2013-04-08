@@ -215,24 +215,6 @@ class overwatch:
         return xchat.get_info("channel") == self.name
 
 
-class recent_list:
-    def __init__(self):
-        self.dict = {}
-
-    def add(self, k):
-        self.dict[k] = time()
-
-    def has(self, key):
-        return key in self.dict.keys()
-
-    def list(self, search=""):
-        if not self.dict:
-            return []
-        if search:
-            return sorted([key for key in self.dict if key.startswith(search)], key=lambda k: self.dict[k])
-        return sorted(self.dict.keys(), key=lambda k: self.dict[k])
-
-
 # xchat to python escape map
 escapes = {
     "%B": "\002",
@@ -291,6 +273,8 @@ def compile_strings():
 
 
 # Set up chat callbacks
+# TODO: Handle queries and multiple channels of the same name properly
+# TODO: Use server-channel instead of channel.
 def chat_callback(event, word, word_eol):
     global last_channel
     channel = xchat.get_info("channel")
