@@ -12,26 +12,24 @@ Settings are available at the top of the script:
 
 Complete features:
 
-* Watch all channels in one window
-* Most-recent channel and nick autocomplete
-* Modular structure
+* Monitor multiple channels in a single buffer
+* Most-recent-first channel and nick tab-completion
 
 Incomplete:
 
-* Update channel target based on nickname autocomplete
-* Define multiple overwatches with channel include or exclude lists
+* Create and manage multiple overwatches with different channel lists
+* Target channel based on recent nickname autocomplete
 * Provide secondary tabs to list hilights
 * Options menu to manage overwatches
 
 Usage:
 
-* Tab or enter with empty entry will autocomplete most recent channel
-* Tab with partial channel will complete by recent channels
-* Tab with nicks will complete by recent nick
+* Autocomplete channels or nicks with tab/shift-tab
+* Tab/enter without any channel will add most recent
 
 Issues:
 
-* Actions are not reliably caught or passed on
+* Channel commands/Actions are not reliably caught or passed on
 * Multiple channels with the same name will currently break
 * Can get hard to track with lots of busy channels
 * While modular, the UI/commands to make multiple and manage filter lists for overwatches is not done
