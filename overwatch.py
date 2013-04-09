@@ -147,7 +147,6 @@ class overwatch:
             elif modifiers == 1:
                 self.auto_list.rotate(1)
 
-
         if self.auto_list:
             # Complete channel
             if self.auto_type == 1:
@@ -303,7 +302,6 @@ def key_press(word, word_eol, data):
             return overwatches[focus].pressed_tab(modifiers)
         else:
             return overwatches[focus].pressed_any(key, modifiers, word)
-# not modifiers & (CTRL | ALT | SHIFT)
     return xchat.EAT_NONE
 
 
