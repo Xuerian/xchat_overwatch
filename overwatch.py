@@ -116,6 +116,15 @@ class overwatch:
         else:
             self.auto_list.extend(recent)
 
+    def auto_list_rotate(self, mod, current=""):
+        if current and len(self.auto_list) > 1:
+            while 1:
+                self.auto_list.rotate(mod)
+                if current != self.auto_list[0]:
+                    break
+        else:
+            self.auto_list.rotate(mod)
+
     def auto_clear(self):
         if not self.auto_first:
             self.auto_first = True
@@ -126,7 +135,10 @@ class overwatch:
         text = self.buffer.get_input().strip()
         word = text.split(" ", 1)
         num = len(word)
+        if num == 2:
+            (line, nick) = text.rsplit(" ", 1)
 
+        # Generate autocomplete list
         if self.auto_first:
             if num == 1:
                 # Tab to next channel
@@ -140,21 +152,23 @@ class overwatch:
                     self.auto_list_channels(word[0])
             # Search nick
             elif num == 2:
-                (line, nick) = text.rsplit(" ", 1)
                 self.auto_list_users(word[0], nick)
-        elif self.auto_list:
-            if modifiers == 0:
-                self.auto_list.rotate(-1)
-            elif modifiers == 1:
-                self.auto_list.rotate(1)
 
         if self.auto_list:
+            # Rotate to next
+            if not self.auto_first:
+                # Tab
+                if modifiers == 0:
+                    mod = -1
+                # Shift-tab
+                elif modifiers == 1:
+                    mod = 1
+                self.auto_list_rotate(mod, self.auto_type == 1 and word[0] or nick)
             # Complete channel
             if self.auto_type == 1:
                 self.buffer.set_input(self.auto_list[0] + " " + (num > 1 and word[1] or ""))
             # Complete nick
             else:
-                line = text.rsplit(" ", 1)[0]
                 self.buffer.set_input("%s %s%s " % (line, self.auto_list[0], xchat.get_prefs("completion_suffix")))
             self.auto_first = False
 
