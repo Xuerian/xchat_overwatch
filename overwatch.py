@@ -9,6 +9,7 @@ import xchat
 from time import time
 import re
 from collections import deque
+import os
 
 MOD_SHIFT = 1
 MOD_CTRL = 4
@@ -256,7 +257,15 @@ def compile_strings():
     # Decode strings from Text Event settings
     re_move = re.compile(r"(.+)(%C\d*)(\$t)(.*)")  # Message color code needs to be put after tab char
     next = ""
-    with open(xchat.get_info("xchatdir") + "/pevents.conf") as f:
+
+    configdir = xchat.get_info("configdir")
+    if not configdir:  # For xchat
+        configdir = xchat.get_info("xchatdir")
+    stringfile = configdir + "/pevents.conf"
+
+    assert os.path.exists(stringfile), "Configuration file pevents.conf not found. You may need to use a (any) custom theme for this file to be created"
+
+    with open(stringfile) as f:
         for line in f:
             words = line.split("=", 1)
             if words and words[0] != "\n":
@@ -266,6 +275,7 @@ def compile_strings():
                     next = value
                 elif key == "event_text" and next:
                     decoded = decode(re_move.sub(r"\1\3\2\4", value))
+                    # Add channel name to pattern, visible and hidden versions (hidden so it shows up when copied)
                     events_decoded[next] = decoded.replace("\t", "\t\0036\010(\010{0}\010)\010\017 ")
                     events_inline[next] = decoded.replace("\t", "\t\010({0})\010 ")
                     next = ""
