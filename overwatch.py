@@ -144,6 +144,7 @@ class overwatch:
                 # Tab to next channel
                 if word[0] in self.channels:
                     self.auto_list_channels()
+                    self.auto_first = False
                 # Complete channel name
                 elif word[0] and not word[0].startswith("#"):
                     self.auto_list_channels("#" + word[0])
