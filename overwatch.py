@@ -6,7 +6,7 @@ __server_name__ = "[Overwatch]"
 __focus_on_load__ = True
 __hide_inline_channel__ = True  # Hides channel name if from same channel as last message
 __random_channel_colors__ = True  # Channel color defaults to __channel_colors__[0]
-__channel_colors__ = [6, 2, 3, 4, 5, 0, 8, 9, 10, 11, 12, 13, 15]
+__channel_colors__ = [19, 20, 22, 24, 25, 26, 27, 28, 29]
 
 import xchat
 from time import time
