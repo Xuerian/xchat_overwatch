@@ -316,7 +316,11 @@ def compile_strings():
                     next = value
                 elif key == "event_text" and next:
                     # Add channel slot to pattern
-                    events_decoded[next] = decode(re_move.sub(r"\1\3\2\4", value)).replace("\t", "\t{0}")
+                    decoded = decode(re_move.sub(r"\1\3\2\4", value))
+                    if xchat.get_prefs("text_indent"):
+                        events_decoded[next] = decoded.replace("\t", "\t{0}")
+                    else:
+                        events_decoded[next] = "{0}" + decoded
                     next = ""
 
 
