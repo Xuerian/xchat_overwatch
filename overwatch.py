@@ -5,7 +5,7 @@ __module_description__ = "Provides meta-tabs which can watch and interact with m
 __server_name__ = "[Overwatch]"
 __focus_on_load__ = True
 __random_channel_colors__ = True  # Channel color defaults to __channel_colors__[0]
-__channel_colors__ = [6, 2, 3, 4, 5, 1, 8, 9, 10, 11, 12, 13, 15]
+__channel_colors__ = [6, 2, 3, 4, 5, 0, 8, 9, 10, 11, 12, 13, 15]
 
 import xchat
 from time import time
