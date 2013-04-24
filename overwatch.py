@@ -325,10 +325,9 @@ def compile_strings():
 def chat_callback(event, word, word_eol):
     global last_channel
     channel = xchat.get_info("channel")
-    if channel in channel_map and channel_map[channel]:
-        return channel_map[channel].on_event(channel, event, word, word_eol)
-    elif greedy_overwatch:
+    if not channel in channel_map and greedy_overwatch:
         greedy_overwatch.watch_channel(channel)
+    if channel in channel_map and channel_map[channel]:
         return channel_map[channel].on_event(channel, event, word, word_eol)
     return xchat.EAT_NONE
 
