@@ -4,12 +4,15 @@ __module_description__ = "Provides meta-tabs which can watch and interact with m
 
 __server_name__ = "[Overwatch]"
 __focus_on_load__ = True
+__random_channel_colors__ = True  # Channel color defaults to __channel_colors__[0]
+__channel_colors__ = [6, 2, 3, 4, 5, 1, 8, 9, 10, 11, 12, 13, 15]
 
 import xchat
 from time import time
 import re
 from collections import deque
 import os
+from random import randint
 
 MOD_SHIFT = 1
 MOD_CTRL = 4
@@ -71,6 +74,7 @@ class overwatch:
     recent_channels = {}
     recent_users = {}
     channels = []
+    channel_colors = {}
     auto_type = 0
     auto_list = deque()
     auto_first = True
@@ -89,6 +93,20 @@ class overwatch:
 
     def err(self, *args):
         self.echo("Overwatch %s error" % self.buffer.name, *args)
+
+    def channel_color(self, channel):
+        if not __random_channel_colors__:
+            return __channel_colors__[0]
+        if not channel in self.channel_colors:
+            values = self.channel_colors.values()
+            # TODO: Use counter to balance out channel colors.
+            # Likely no worth it due to limited number of channels in effective overwatches
+            available = [c for c in __channel_colors__ if c not in values]
+            if available:
+                self.channel_colors[channel] = available[0]
+            else:
+                self.channel_colors[channel] = __channel_colors__[randint(0, __channel_colors__.length())]
+        return self.channel_colors[channel]
 
     def auto_list_channels(self, search=""):
         self.auto_type = 1
@@ -189,8 +207,12 @@ class overwatch:
 
     def on_event(self, channel, event, word, word_eol):
         # Add to buffer
-        which_list = (channel == self.last_channel and events_inline or events_decoded)
-        self.echo(which_list[event].format(channel, *(word + padding)))
+        channel_text = ""
+        if channel == self.last_channel:
+            channel_text = channel_pattern_hidden.format(channel)
+        else:
+            channel_text = channel_pattern_visible.format(channel, self.channel_color(channel))
+        self.echo(events_decoded[event].format(channel_text, *(word + padding)))
         # Update recents
         self.recent_channels[channel] = now = time()
         self.recent_users[word[0]] = (channel, time())
@@ -266,6 +288,9 @@ chat_events = [
     "Private Action"
 ]
 
+channel_pattern_visible = "\003{1}\010(\010{0}\010)\010\017 "
+channel_pattern_hidden = "\010({0})\010 "
+
 
 def compile_strings():
     global events_decoded, events_inline
@@ -289,10 +314,8 @@ def compile_strings():
                 if key == "event_name" and value in chat_events:
                     next = value
                 elif key == "event_text" and next:
-                    decoded = decode(re_move.sub(r"\1\3\2\4", value))
-                    # Add channel name to pattern, visible and hidden versions (hidden so it shows up when copied)
-                    events_decoded[next] = decoded.replace("\t", "\t\0036\010(\010{0}\010)\010\017 ")
-                    events_inline[next] = decoded.replace("\t", "\t\010({0})\010 ")
+                    # Add channel slot to pattern
+                    events_decoded[next] = decode(re_move.sub(r"\1\3\2\4", value)).replace("\t", "\t{0}")
                     next = ""
 
 
