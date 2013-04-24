@@ -10,6 +10,7 @@ __channel_colors__ = [19, 20, 22, 24, 25, 26, 27, 28, 29]
 
 # TODO: Better functionality with nick indentation off
 # TODO: Whitelist/Blacklist filters for overwatches
+# TODO: Handle networks properly/separately
 # TODO: Improve tab completion (It doesn't feel natural sometimes)
 # TODO: Random channel colors that behave like heXchat's
 # TODO: Reduce overlaps in channel coloring? Might not be worth it due to low optimal channel number.
