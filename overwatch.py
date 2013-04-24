@@ -1,12 +1,18 @@
 __module_name__ = "overwatch-mode"
-__module_version__ = "0.3"
-__module_description__ = "Provides meta-tabs which can watch and interact with multiple channels"
+__module_version__ = "0.4"
+__module_description__ = "Provides digest tabs which can watch and interact with multiple channels"
 
 __server_name__ = "[Overwatch]"
 __focus_on_load__ = True
 __hide_inline_channel__ = True  # Hides channel name if from same channel as last message
 __random_channel_colors__ = True  # Channel color defaults to __channel_colors__[0]
 __channel_colors__ = [19, 20, 22, 24, 25, 26, 27, 28, 29]
+
+# TODO: Better functionality with nick indentation off
+# TODO: Whitelist/Blacklist filters for overwatches
+# TODO: Improve tab completion (It doesn't feel natural sometimes)
+# TODO: Random channel colors that behave like heXchat's
+# TODO: Reduce overlaps in channel coloring? Might not be worth it due to low optimal channel number.
 
 import xchat
 from time import time
@@ -24,8 +30,7 @@ TAB = 0xFF09
 LEFT_TAB = 0xFE20
 ENTER = 0xFF0D
 
-events_decoded = {}  # Event strings decoded with channel added
-events_inline = {}  # Decoded strings with channel hidden
+events_decoded = {}  # Event strings decoded with channel marker added
 
 overwatches = {}  # Shouldn't double up
 greedy_overwatch = None
@@ -100,8 +105,6 @@ class overwatch:
             return __channel_colors__[0]
         if not channel in self.channel_colors:
             values = self.channel_colors.values()
-            # TODO: Use counter to balance out channel colors.
-            # Likely no worth it due to limited number of channels in effective overwatches
             available = [c for c in __channel_colors__ if c not in values]
             if available:
                 self.channel_colors[channel] = available[0]
@@ -294,7 +297,7 @@ channel_pattern_hidden = "\010({0})\010 "
 
 
 def compile_strings():
-    global events_decoded, events_inline
+    global events_decoded
     # Decode strings from Text Event settings
     re_move = re.compile(r"(.+)(%C\d*)(\$t)(.*)")  # Message color code needs to be put after tab char
     next = ""
