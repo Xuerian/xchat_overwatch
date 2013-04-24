@@ -12,7 +12,7 @@ from time import time
 import re
 from collections import deque
 import os
-from random import randint
+from random import choice
 
 MOD_SHIFT = 1
 MOD_CTRL = 4
@@ -105,7 +105,7 @@ class overwatch:
             if available:
                 self.channel_colors[channel] = available[0]
             else:
-                self.channel_colors[channel] = __channel_colors__[randint(0, __channel_colors__.length())]
+                self.channel_colors[channel] = choice(__channel_colors__)
         return self.channel_colors[channel]
 
     def auto_list_channels(self, search=""):
