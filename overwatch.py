@@ -393,6 +393,13 @@ def load(*args):
         for x in xchat.get_list("channels"):
             greedy_overwatch.watch_channel(x.channel)
 
-    main.echo(__module_name__, __module_version__, main.buffer.initial_load and 'loaded' or 'reloaded')
+    print __module_name__, __module_version__, main.buffer.initial_load and 'loaded' or 'reloaded'
 
 xchat.hook_timer(100, load)
+
+
+def unload(*args):
+    print __module_name__, __module_version__, 'unloaded'
+
+
+xchat.hook_unload(unload)
