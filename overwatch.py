@@ -209,7 +209,7 @@ class overwatch:
             channel_text = channel_pattern_hidden.format(channel, self.channel_color(channel))
         else:
             channel_text = channel_pattern_visible.format(channel, self.channel_color(channel))
-        self.echo(events_decoded[event].format(channel_text, *(word + padding)))
+        self.buffer.context.prnt(events_decoded[event].format(channel_text, *(word + padding)))
         # Update recents
         self.recent_channels[channel] = now = time()
         self.recent_users[word[0]] = (channel, time())
