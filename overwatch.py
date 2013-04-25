@@ -206,7 +206,7 @@ class overwatch:
         # Add to buffer
         channel_text = ""
         if channel == self.last_channel and __hide_inline_channel__:
-            channel_text = channel_pattern_hidden.format(channel)
+            channel_text = channel_pattern_hidden.format(channel, self.channel_color(channel))
         else:
             channel_text = channel_pattern_visible.format(channel, self.channel_color(channel))
         self.echo(events_decoded[event].format(channel_text, *(word + padding)))
