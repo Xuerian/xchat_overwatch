@@ -2,11 +2,25 @@ __module_name__ = "overwatch-mode"
 __module_version__ = "0.4"
 __module_description__ = "Provides digest tabs which can watch and interact with multiple channels"
 
+# OPTIONS
+
+# Tab name
 __server_name__ = "[Overwatch]"
+
+# Focus overwatch tab when heXchat loads
 __focus_on_load__ = True
-__hide_inline_channel__ = True  # Hides channel name if from same channel as last message
-__random_channel_colors__ = True  # Channel color defaults to __channel_colors__[0]
+
+# Hides channel name if from same channel as last message
+__hide_inline_channel__ = True
+__inline_prefix__ = "| "
+
+# Use random colors for channel names
+__random_channel_colors__ = True
+
+# Channel color defaults to __channel_colors__[0]
 __channel_colors__ = [19, 20, 22, 24, 25, 26, 27, 28, 29]
+
+# END OPTIONS
 
 # TODO: Better functionality with nick indentation off
 # TODO: Whitelist/Blacklist filters for overwatches
@@ -286,7 +300,7 @@ chat_events = [
 ]
 
 channel_pattern_visible = "\003{1}\010(\010{0}\010)\010\017 "
-channel_pattern_hidden = "\010({0})\010 "
+channel_pattern_hidden = "\003{1}\010({0})\010*\017".replace("*", __inline_prefix__)
 
 
 def compile_strings():
