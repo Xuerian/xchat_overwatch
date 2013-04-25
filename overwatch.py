@@ -12,15 +12,14 @@ __channel_colors__ = [19, 20, 22, 24, 25, 26, 27, 28, 29]
 # TODO: Whitelist/Blacklist filters for overwatches
 # TODO: Handle networks properly/separately
 # TODO: Improve tab completion (It doesn't feel natural sometimes)
-# TODO: Random channel colors that behave like heXchat's
 # TODO: Reduce overlaps in channel coloring? Might not be worth it due to low optimal channel number.
+# This conflicts with hexchat's color = len(nick) % len(colors)
 
 import xchat
 from time import time
 import re
 from collections import deque
 import os
-from random import choice
 
 MOD_SHIFT = 1
 MOD_CTRL = 4
@@ -104,14 +103,7 @@ class overwatch:
     def channel_color(self, channel):
         if not __random_channel_colors__:
             return __channel_colors__[0]
-        if not channel in self.channel_colors:
-            values = self.channel_colors.values()
-            available = [c for c in __channel_colors__ if c not in values]
-            if available:
-                self.channel_colors[channel] = available[0]
-            else:
-                self.channel_colors[channel] = choice(__channel_colors__)
-        return self.channel_colors[channel]
+        return __channel_colors__[len(channel) % len(__channel_colors__)]
 
     def auto_list_channels(self, search=""):
         self.auto_type = 1
