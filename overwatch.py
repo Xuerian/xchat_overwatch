@@ -51,6 +51,9 @@ greedy_overwatch = None
 channel_map = {}
 padding = ["", "", ""]  # Prevents format from complaining on short events
 
+channel_pattern_visible = "\003{1}\010(\010{0}\010)\010\017 "
+channel_pattern_hidden = "\003{1}\010({0})\010*\017".replace("*", __inline_prefix__)
+
 
 class xbuffer:
     initial_load = False
@@ -298,9 +301,6 @@ chat_events = [
     "Private Message",
     "Private Action"
 ]
-
-channel_pattern_visible = "\003{1}\010(\010{0}\010)\010\017 "
-channel_pattern_hidden = "\003{1}\010({0})\010*\017".replace("*", __inline_prefix__)
 
 
 def compile_strings():
