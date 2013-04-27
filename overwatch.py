@@ -13,6 +13,8 @@ __focus_on_load__ = True
 # Hides channel name if from same channel as last message
 __hide_inline_channel__ = True
 __inline_prefix__ = "| "
+__hide_inline_nick__ = False  # Doesn't seem as default-y as channels
+__inline_nick_prefix__ = "\""
 
 
 # Colorize channel names, similar to "Colored nick names" option
@@ -56,6 +58,7 @@ re_nick = re.compile(r"^(\x03[\d]+)?(.+?)$")
 
 channel_pattern_visible = "\003{1}\010(\010{0}\010)\010\017 "
 channel_pattern_hidden = "\003{1}\010({0})\010*\017".replace("*", __inline_prefix__)
+nick_pattern_hidden = "\010{0}\010{1}" + __inline_nick_prefix__
 
 
 class xbuffer:
@@ -229,12 +232,17 @@ class overwatch:
             (nick_color, nick) = re_nick.search(word[0]).groups("")
         else:
             nick_color, nick = "", word[0]
+        # Inline channel names
         channel_text = ""
-        if channel == self.last_channel and __hide_inline_channel__:
+        if __hide_inline_channel__ and channel == self.last_channel:
             channel_text = channel_pattern_hidden.format(channel, self.channel_color(channel))
         else:
             channel_text = channel_pattern_visible.format(channel, self.channel_color(channel))
-        self.buffer.context.prnt(events_decoded[event].format(channel_text, *(word + padding)))
+        # Inline nick
+        if __hide_inline_nick__ and channel == self.last_channel and nick == self.last_nick:
+            nick_text = nick_pattern_hidden.format(nick, nick_color)
+        else:
+            nick_text = word[0]
         # Add to buffer
         self.buffer.context.prnt(events_decoded[event].format(channel_text, nick_text, *(word[1:] + padding)))
         # Update recents

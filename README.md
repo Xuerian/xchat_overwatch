@@ -14,6 +14,8 @@ Settings are available at the top of the script:
 * __focus_on_load__ causes the tab to be focused immediately when loaded
 * __hide_inline_channel__ replaces consecutive channel names with..
 * __inline_prefix__ which defaults to "| "
+* __hide_inline_nick__ replaces consecutive nicks with..
+* __inline_nick_Prefix__ which defaults to "
 * __colored_channel_names__ causes channel names to be colored similarly to "Colored nick names" in heXchat
 * __channel_colors__ provides a list of possible channel colors, the first of which is used if random colors is turned off.
 
