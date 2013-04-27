@@ -31,6 +31,7 @@ __channel_colors__ = [19, 20, 22, 24, 25, 26, 27, 28, 29]
 # TODO: Improve tab completion (It doesn't feel natural sometimes)
 # TODO: Reduce overlaps in channel coloring? Might not be worth it due to low optimal channel number.
 # This conflicts with hexchat's color = len(nick) % len(colors)
+# TODO: Shortcuts (Reply to last hilight, send to last channel, clear to channel name)
 
 import xchat
 from time import time
@@ -420,5 +421,9 @@ xchat.hook_timer(100, load)
 def unload(*args):
     print __module_name__, __module_version__, 'unloaded'
 
+
+# TODO: Provide separate buffer for debug, also split into separate module to catch script errors.
+def debug(*args):
+    main.echo(*args)
 
 xchat.hook_unload(unload)

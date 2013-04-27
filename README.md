@@ -30,6 +30,7 @@ Incomplete:
 * Target channel based on recent nickname autocomplete
 * Provide secondary tabs to summarize hilights
 * Options menu to manage overwatches
+* Better shortcuts
 
 Usage:
 
