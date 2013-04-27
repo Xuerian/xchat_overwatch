@@ -14,8 +14,9 @@ __focus_on_load__ = True
 __hide_inline_channel__ = True
 __inline_prefix__ = "| "
 
-# Use random colors for channel names
-__random_channel_colors__ = True
+
+# Colorize channel names, similar to "Colored nick names" option
+__colored_channel_names__ = True
 
 # Channel color defaults to __channel_colors__[0]
 __channel_colors__ = [19, 20, 22, 24, 25, 26, 27, 28, 29]
@@ -118,7 +119,7 @@ class overwatch:
         self.echo("Overwatch %s error" % self.buffer.name, *args)
 
     def channel_color(self, channel):
-        if not __random_channel_colors__:
+        if not __colored_channel_names__:
             return __channel_colors__[0]
         return __channel_colors__[len(channel) % len(__channel_colors__)]
 
