@@ -52,6 +52,8 @@ greedy_overwatch = None
 channel_map = {}
 padding = ["", "", ""]  # Prevents format from complaining on short events
 
+re_nick = re.compile(r"^(\x03[\d]+)?(.+?)$")
+
 channel_pattern_visible = "\003{1}\010(\010{0}\010)\010\017 "
 channel_pattern_hidden = "\003{1}\010({0})\010*\017".replace("*", __inline_prefix__)
 
@@ -94,6 +96,7 @@ class overwatch:
     is_greedy = True  # Opt
     greedy_blacklist = []  # Opt
     last_channel = ""
+    last_nick = ""
     last_action = time()
     recent_channels = {}
     recent_users = {}
@@ -221,16 +224,22 @@ class overwatch:
         return xchat.EAT_NONE
 
     def on_event(self, channel, event, word, word_eol):
-        # Add to buffer
+        # Separate nick and color
+        if xchat.get_prefs("text_color_nicks"):
+            (nick_color, nick) = re_nick.search(word[0]).groups("")
+        else:
+            nick_color, nick = "", word[0]
         channel_text = ""
         if channel == self.last_channel and __hide_inline_channel__:
             channel_text = channel_pattern_hidden.format(channel, self.channel_color(channel))
         else:
             channel_text = channel_pattern_visible.format(channel, self.channel_color(channel))
         self.buffer.context.prnt(events_decoded[event].format(channel_text, *(word + padding)))
+        # Add to buffer
+        self.buffer.context.prnt(events_decoded[event].format(channel_text, nick_text, *(word[1:] + padding)))
         # Update recents
         self.recent_channels[channel] = now = time()
-        self.recent_users[word[0]] = (channel, time())
+        self.recent_users[nick] = (channel, time())
         # Update prompt
         line = self.buffer.get_input()
         if now - self.last_action > 15 or (not line and now - self.last_action > 5):
@@ -238,6 +247,7 @@ class overwatch:
                 self.buffer.set_input(channel + " ")
                 self.auto_clear()
         self.last_channel = channel
+        self.last_nick = nick
 
     def on_send(self, word, word_eol):
         if not word or not word[0].startswith("#"):
