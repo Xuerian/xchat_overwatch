@@ -28,7 +28,7 @@ option_defaults = {
 def opt(key):
     return option_defaults[key]
 
-# TODO: Better functionality with nick indentation off
+# TODO: Option saving/changing without editing file
 # TODO: Whitelist/Blacklist filters for overwatches
 # TODO: Handle networks properly/separately
 # TODO: Improve tab completion (It doesn't feel natural sometimes)
@@ -106,13 +106,13 @@ class overwatch:
     last_channel = ""  # Previous event source
     last_nick = ""
     last_action = time()
-    recent_channels = {}
-    recent_users = {}
-    channels = []
-    channel_colors = {}
-    auto_type = 0
-    auto_list = deque()
-    auto_first = True
+    last_target = ""
+    recent_channels = {}  # For building auto lists
+    recent_users = {}  # For building auto lists
+    channels = []  # Channels owned by this overwatch
+    auto_type = 0  # Type of autocomplete in progress (1/channel 2/nick)
+    auto_list = deque()  # Current autocomplete list
+    auto_first = True  # First tabcomplete. TODO: auto_active better?
 
     def __init__(self, name=opt("server_name")):
         global overwatches, greedy_overwatch
@@ -388,7 +388,6 @@ def compile_strings():
 # TODO: Handle queries and multiple channels of the same name properly
 # TODO: Use server-channel instead of channel.
 def chat_callback(event, word, word_eol):
-    global last_channel
     channel = xchat.get_info("channel")
     if not channel in channel_map and greedy_overwatch:
         greedy_overwatch.watch_channel(channel)
