@@ -233,12 +233,8 @@ class overwatch:
             self.auto_clear()
 
         if key == BACKSPACE:
-            # Clear entry
+            # Reset to target
             if modifiers == MOD_ALT:
-                self.buffer.set_input("")
-                return xchat.EAT_ALL
-            # Set target to last channel
-            if modifiers == MOD_SHIFT or (not self.buffer.get_input() and not modifiers) and self.last_target:
                 self.buffer.set_input(self.last_target + " ")
                 return xchat.EAT_ALL
 
