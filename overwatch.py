@@ -2,28 +2,31 @@ __module_name__ = "overwatch-mode"
 __module_version__ = "0.4"
 __module_description__ = "Provides digest tabs which can watch and interact with multiple channels"
 
-# OPTIONS
+option_defaults = {
+    # Default tab name
+    "server_name": "[Overwatch]",
+    # Focus tab on load
+    "focus_on_load": True,
+    # Hide repeated channel names
+    "hide_inline_channel": True,
+    # Replace repeated channel with
+    "inline_channel_prefix": "| ",
+    # Shorten repeated nicks
+    "truncate_nick_inline": False,
+    "truncate_nick_length": 4,
+    # Color channels like heXchat's colored nicks
+    "colored_channel_names": True,
+    "channel_colors": [19, 20, 22, 24, 25, 26, 27, 28, 29],
+    # Update target to match latest message
+    "auto_update_target": False,
+    # Seconds to wait after sending message before auto-updating
+    "auto_target_delay": 15,
+    "auto_target_delay_empty": 5
+}
 
-# Tab name
-__server_name__ = "[Overwatch]"
 
-# Focus overwatch tab when heXchat loads
-__focus_on_load__ = True
-
-# Hides channel name if from same channel as last message
-__hide_inline_channel__ = True
-__inline_prefix__ = "| "
-__hide_inline_nick__ = False  # Doesn't seem as default-y as channels
-__inline_nick_prefix__ = "\""
-
-
-# Colorize channel names, similar to "Colored nick names" option
-__colored_channel_names__ = True
-
-# Channel color defaults to __channel_colors__[0]
-__channel_colors__ = [19, 20, 22, 24, 25, 26, 27, 28, 29]
-
-# END OPTIONS
+def opt(key):
+    return option_defaults[key]
 
 # TODO: Better functionality with nick indentation off
 # TODO: Whitelist/Blacklist filters for overwatches
@@ -43,10 +46,11 @@ MOD_SHIFT = 1
 MOD_CTRL = 4
 MOD_ALT = 8
 
-SHIFT = 65505
+SHIFT = 0xFFE1
 TAB = 0xFF09
 LEFT_TAB = 0xFE20
 ENTER = 0xFF0D
+BACKSPACE = 0xFF08
 
 events_decoded = {}  # Event strings decoded with channel marker added
 
@@ -58,8 +62,7 @@ padding = ["", "", ""]  # Prevents format from complaining on short events
 re_nick = re.compile(r"^(\x03[\d]+)?(.+?)$")
 
 channel_pattern_visible = "\003{1}\010(\010{0}\010)\010\017 "
-channel_pattern_hidden = "\003{1}\010({0})\010*\017".replace("*", __inline_prefix__)
-nick_pattern_hidden = "\010{0}\010{1}" + __inline_nick_prefix__
+channel_pattern_hidden = "\003{1}\010({0})\010*\017".replace("*", opt("inline_channel_prefix"))
 
 
 class xbuffer:
@@ -96,10 +99,11 @@ class xbuffer:
 
 
 class overwatch:
-    focus_on_load = __focus_on_load__  # Opt
+    focus_on_load = opt("focus_on_load")  # Opt
     is_greedy = True  # Opt
     greedy_blacklist = []  # Opt
-    last_channel = ""
+    current_channel = ""  # Latest event source
+    last_channel = ""  # Previous event source
     last_nick = ""
     last_action = time()
     recent_channels = {}
@@ -110,7 +114,7 @@ class overwatch:
     auto_list = deque()
     auto_first = True
 
-    def __init__(self, name=__server_name__):
+    def __init__(self, name=opt("server_name")):
         global overwatches, greedy_overwatch
         self.buffer = xbuffer(name)
         if self.buffer.initial_load and self.focus_on_load:
@@ -126,9 +130,10 @@ class overwatch:
         self.echo("Overwatch %s error" % self.buffer.name, *args)
 
     def channel_color(self, channel):
-        if not __colored_channel_names__:
-            return __channel_colors__[0]
-        return __channel_colors__[len(channel) % len(__channel_colors__)]
+        colors = opt("channel_colors")
+        if not opt("colored_channel_names"):
+            return colors[0]
+        return colors[len(channel) % len(colors)]
 
     def auto_list_channels(self, search=""):
         self.auto_type = 1
@@ -216,15 +221,27 @@ class overwatch:
         return xchat.EAT_ALL
 
     def pressed_enter(self, modifiers):
-        if self.last_channel and not self.buffer.get_input():
+        if self.current_channel and not self.buffer.get_input():
             self.pressed_tab(0)
             return xchat.EAT_ALL
         return xchat.EAT_NONE
 
     def pressed_any(self, key, modifiers, word):
+        # Clear auto-complete if not shift-tabbing
         if key != SHIFT:
             self.last_action = time()
             self.auto_clear()
+
+        if key == BACKSPACE:
+            # Clear entry
+            if modifiers == MOD_ALT:
+                self.buffer.set_input("")
+                return xchat.EAT_ALL
+            # Set target to last channel
+            if modifiers == MOD_SHIFT or (not self.buffer.get_input() and not modifiers) and self.last_target:
+                self.buffer.set_input(self.last_target + " ")
+                return xchat.EAT_ALL
+
         return xchat.EAT_NONE
 
     def on_event(self, channel, event, word, word_eol):
@@ -234,14 +251,15 @@ class overwatch:
         else:
             nick_color, nick = "", word[0]
         # Inline channel names
-        channel_text = ""
-        if __hide_inline_channel__ and channel == self.last_channel:
+        hide_channel = opt("hide_inline_channel")
+        if hide_channel and channel == self.current_channel:
             channel_text = channel_pattern_hidden.format(channel, self.channel_color(channel))
         else:
             channel_text = channel_pattern_visible.format(channel, self.channel_color(channel))
-        # Inline nick
-        if __hide_inline_nick__ and channel == self.last_channel and nick == self.last_nick:
-            nick_text = nick_pattern_hidden.format(nick, nick_color)
+        # Truncated nick
+        truncate_length = opt("truncate_nick_length")
+        if opt("truncate_nick_inline") and nick == self.last_nick and ((hide_channel and self.last_channel == self.current_channel) or (not hide_channel and self.current_channel == channel)) and len(nick) > truncate_length:
+            nick_text = "{0}{1}\010{2}\010".format(nick_color, nick[0:truncate_length], nick[truncate_length:])
         else:
             nick_text = word[0]
         # Add to buffer
@@ -250,25 +268,37 @@ class overwatch:
         self.recent_channels[channel] = now = time()
         self.recent_users[nick] = (channel, time())
         # Update prompt
-        line = self.buffer.get_input()
-        if now - self.last_action > 15 or (not line and now - self.last_action > 5):
-            if not line or line == self.last_channel + " ":
-                self.buffer.set_input(channel + " ")
-                self.auto_clear()
-        self.last_channel = channel
+        if opt("auto_update_target"):
+            line = self.buffer.get_input()
+            if now - self.last_action > opt("auto_target_delay") or (not line and now - self.last_action > opt("auto_target_delay_empty")):
+                if not line or line == self.current_channel + " ":
+                    self.buffer.set_input(channel + " ")
+                    self.auto_clear()
+        self.last_channel = self.current_channel
+        self.current_channel = channel
         self.last_nick = nick
 
     def on_send(self, word, word_eol):
         if not word or not word[0].startswith("#"):
-            if self.last_channel:
+            if self.current_channel:
                 # Add missing channel prefix
-                line = self.last_channel + " " + word_eol[0]
+                line = self.current_channel + " " + word_eol[0]
                 self.buffer.set_input(line)
-        elif word:
+        elif len(word) > 1:
             context = xchat.find_context(channel=word[0])
             # Send message and restore channel prefix
             if context:
-                context.command("msg " + word_eol[0])
+                if word[1].startswith("/"):
+                    command = word[1][1:]
+                    if len(word) > 2:
+                        context.command(command + " " + word_eol[2])
+                    else:
+                        context.command(command)
+
+                    print word[1], word[1][1:], word_eol, word
+                else:
+                    context.command("msg " + word_eol[0])
+                    self.last_target = word[0]
                 self.buffer.set_input(word[0] + " ")
             else:
                 # No valid target channel
@@ -404,7 +434,7 @@ def load(*args):
     compile_strings()
     map(clone_chat_event, chat_events)
 
-    main = overwatch(__server_name__)
+    main = overwatch(opt("server_name"))
 
     xchat.hook_print("Key Press", key_press)
     xchat.hook_command("", on_send)
