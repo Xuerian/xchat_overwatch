@@ -38,7 +38,7 @@ Incomplete:
 
 Shortcuts:
 
-* __tab__/__shift-tab__
+* __tab__ and __shift-tab__
  * With less than two words, tab-completes channels
  * With more than one word, tab-completes nicks
 * __shift-backspace__ clears entry and sets target to the last channel you sent to
