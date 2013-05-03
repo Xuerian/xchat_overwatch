@@ -17,11 +17,15 @@ option_defaults = {
     # Color channels like heXchat's colored nicks
     "colored_channel_names": True,
     "channel_colors": [19, 20, 22, 24, 25, 26, 27, 28, 29],
-    # Update target to match latest message
-    "auto_update_target": False,
+    # Update target based on time since last action
+    "auto_target": True,
+    # Action to take with target
+    "auto_target_action": "clear", # clear, update
     # Seconds to wait after sending message before auto-updating
-    "auto_target_delay": 15,
-    "auto_target_delay_empty": 5
+    "auto_target_delay": 10,
+    "auto_target_delay_empty": 5,
+    # Retain target after sending message
+    "keep_target": False,
 }
 
 
@@ -264,11 +268,15 @@ class overwatch:
         self.recent_channels[channel] = now = time()
         self.recent_users[nick] = (channel, time())
         # Update prompt
-        if opt("auto_update_target"):
-            line = self.buffer.get_input()
+        if opt("auto_target"):
+            line = self.buffer.get_input().strip()
             if now - self.last_action > opt("auto_target_delay") or (not line and now - self.last_action > opt("auto_target_delay_empty")):
-                if not line or line == self.current_channel + " ":
-                    self.buffer.set_input(channel + " ")
+                if not line or (line in self.channels and line != channel):
+                    action = opt("auto_target_action")
+                    if action == "clear":
+                        self.buffer.set_input("")
+                    elif action == "update":
+                        self.buffer.set_input(channel + " ")
                     self.auto_clear()
         self.last_channel = self.current_channel
         self.current_channel = channel

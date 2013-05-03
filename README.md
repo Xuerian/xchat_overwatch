@@ -18,7 +18,8 @@ Settings are available at the top of the script:
 * __truncate_nick_length__
 * __colored_channel_names__ causes channel names to be colored similarly to "Colored nick names" in heXchat
 * __channel_colors__ provides a list of possible channel colors, the first of which is used if random colors is turned off.
-* __auto_update_target__ sets the channel target to the latest active channel after..
+* __auto_target__ enables updating the channel target based on last action time
+* __auto_target_action__ is either "clear" to remove the outdated target, or "update" to change it to the new channel
 * __auto_target_delay__ seconds, unless there is no current target, in which case after..
 * __auto_target_delay_empty__ seconds
 
