@@ -1,5 +1,5 @@
 __module_name__ = "overwatch-mode"
-__module_version__ = "0.4"
+__module_version__ = "0.5"
 __module_description__ = "Provides digest tabs which can watch and interact with multiple channels"
 
 option_defaults = {
@@ -20,7 +20,7 @@ option_defaults = {
     # Update target based on time since last action
     "auto_target": True,
     # Action to take with target
-    "auto_target_action": "clear", # clear, update
+    "auto_target_action": "clear",  # clear, update
     # Seconds to wait after sending message before auto-updating
     "auto_target_delay": 10,
     "auto_target_delay_empty": 5,
@@ -299,7 +299,7 @@ class overwatch:
                     else:
                         context.command(command)
 
-                    print word[1], word[1][1:], word_eol, word
+                    self.echo(word[1], word[1][1:], word_eol, word)
                 else:
                     context.command("msg " + word_eol[0])
                     self.last_target = word[0]
@@ -435,7 +435,8 @@ main = None
 def load(*args):
     global main
     compile_strings()
-    map(clone_chat_event, chat_events)
+    for x in chat_events:
+        clone_chat_event(x)
 
     main = overwatch(opt("server_name"))
 
@@ -446,13 +447,13 @@ def load(*args):
         for x in xchat.get_list("channels"):
             greedy_overwatch.watch_channel(x.channel)
 
-    print __module_name__, __module_version__, main.buffer.initial_load and 'loaded' or 'reloaded'
+    print(__module_name__, __module_version__, main.buffer.initial_load and 'loaded' or 'reloaded')
 
 xchat.hook_timer(100, load)
 
 
 def unload(*args):
-    print __module_name__, __module_version__, 'unloaded'
+    print(__module_name__, __module_version__, 'unloaded')
 
 
 # TODO: Provide separate buffer for debug, also split into separate module to catch script errors.
