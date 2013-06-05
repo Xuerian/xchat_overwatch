@@ -240,6 +240,8 @@ class channel_group:
         self.recent_users = {}
         self.recent_channels = {}
         self.chanrefs = {}
+        self.backrefs = {}
+        self.last_action = time()
 
         # Apply saved options
         if "options" in save_data:
@@ -264,7 +266,7 @@ class channel_group:
         # Create menu items
         self.menu_update()
 
-        self.channel_update()
+        self.channels_update()
 
         # Focus
         if self.options["focus_on_load"]:
@@ -291,42 +293,45 @@ class channel_group:
         # Add to buffer
         self.buffer.context.prnt(events_decoded[event].format(channel_text, word[0], *args))
 
+        # Recents
+        chanref = self.backrefs[(network, channel)]
+        self.recent_channels[chanref] = now = time()
+        self.recent_users.setdefault((network, channel), {})[nick] = now
+
         # Update prompt
         if self.options["auto_target"]:
             line = self.buffer.get_input().strip()
             if now - self.last_action > self.options["auto_target_delay"] or (not line and now - self.last_action > self.options["auto_target_delay_empty"]):
-                if not line or (line in self.chanrefs and line != channel):
+                if not line or (line in self.chanrefs and line != chanref):
                     action = self.options["auto_target_action"]
                     if action == "clear":
                         self.buffer.set_input("")
                     elif action == "update":
-                        self.buffer.set_input(channel + " ")
+                        self.buffer.set_input(chanref + " ")
                     self.auto_clear()
 
         # Update state
-        self.recent_channels[(network, channel)] = now = time()
-        self.recent_users[(network, channel)][nick] = time()
         self.channel_previous = self.channel_current
         self.channel_current = (network, channel)
 
     def auto_list_channels(self, search=""):
         self.auto_list.clear()
         self.auto_type = 1
-        # Recent channels
-        recent = [k for (n, c) in self.recent_channels.keys() if c.startswith(search)]
-        recent.sort(reverse=True, key=lambda k: self.recent_channels[k])
         # Rest of channels
-        rest = [k for k in self.chanrefs if k not in recent and k.startswith(search)]
-        rest.sort()
-        self.auto_list.extend(recent + rest)
+        chans = [k for k in self.recent_channels if k.startswith(search)]
+        chans.sort(key=lambda k: self.recent_channels[k], reverse=True)
+        self.auto_list.extend(chans)
 
     def auto_list_users(self, network, channel, search=""):
         self.auto_list.clear()
         self.auto_type = 2
         p = re.compile(re.escape(search), re.I)
         # Recently seen nicks from this channel
-        recent = [k for (n,c), v in self.recent_users.items() if bool(p.match(k)) and v[0] == channel]
-        recent.sort(reverse=True, key=lambda k: self.recent_users[k][1])
+        if (network, channel) in self.recent_users:
+            recent = [k for k in self.recent_users[(network, channel)] if bool(p.match(k))]
+            recent.sort(reverse=True, key=lambda k: self.recent_users[(network, channel)][k])
+        else:
+            recent = []
         # Get rest of nicks from target channel
         channel_context = xchat.find_context(network, channel)
         if channel_context:
@@ -336,7 +341,6 @@ class channel_group:
             self.auto_list.extend(recent + full)
         else:
             self.auto_list.extend(recent)
-        print(self.auto_list)
 
     def auto_list_rotate(self, mod, current=""):
         if current and len(self.auto_list) > 1:
@@ -486,21 +490,28 @@ class channel_group:
             if x.type == 2 and (x.network not in self.channels or x.channel not in self.channels[x.network]):
                 self.menu_item("Add {chan} ({net})", "ov channel_add {net}??{chan}??{name}", x.network, x.channel)
 
+    # Update all channel lists
     def channels_update(self):
-        self.chanrefs = {}
+        self.chanrefs.clear()
+        self.backrefs.clear()
+        self.recent_channels.clear()
         self.auto_clear()
         for network in self.channels:
             for channel in self.channels[network]:
                 if xchat.find_context(network, channel):
                     if channel not in self.chanrefs:
-                        self.chanrefs[channel] = (network, channel)
+                        key = channel
                     else:
                         suffix = network[0]
                         while self.chanrefs[channel][0].startswith(suffix):
                             suffix += network[len(suffix)]
-                        self.chanrefs[channel+":"+suffix]
-
-
+                        key = channel+":"+suffix
+                    self.chanrefs[key] = (network, channel)
+                    self.backrefs[(network, channel)] = key
+        # Cheating
+        tmp = sorted(self.chanrefs.keys(), reverse=True)
+        for k in tmp:
+            self.recent_channels[k] = time() - (50 - len(self.recent_channels))
 
     # Rename group
     def rename(self, name):
@@ -619,6 +630,7 @@ def dispatch_command(word, word_eol, userdata):
 def dispatch_channels_change(word, word_eol, event):
     for x in registered_groups.values():
         x.menu_update()
+        x.channels_update()
 
 
 def command_handler(word, word_eol, userdata):
