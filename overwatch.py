@@ -414,7 +414,7 @@ class channel_group:
         if not word or not word[0].startswith("#"):
             if self.channel_current:
                 # Add missing channel prefix
-                line = self.channel_current + " " + word_eol[0]
+                line = self.channel_current[1] + " " + word_eol[0]
                 self.buffer.set_input(line)
         elif len(word) > 1:
             context = xchat.find_context(channel=word[0])
