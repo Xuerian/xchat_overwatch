@@ -86,14 +86,14 @@ class xbuffer:
         self.acquire_context()
 
     def acquire_context(self):
-        self.context = xchat.find_context(channel=self.name)
+        self.context = xchat.find_context(server=self.name)
         if not self.context:
             xchat.find_context().set()
             if self.is_server:
                 xchat.command('newserver -noconnect "{}"'.format(self.name))
             else:
                 xchat.command('query "{}"'.format(self.name))
-            self.context = xchat.find_context(channel=self.name)
+            self.context = xchat.find_context(server=self.name)
 
     def focus(self):
         self.context.set()
@@ -594,9 +594,9 @@ def compile_strings():
 
 
 def xchat_in_group():
-    network, channel = xchat.get_info("network"), xchat.get_info("channel")
-    if not network and channel in registered_groups:
-        return registered_groups[channel]
+    network = xchat.get_info("network")
+    if network in registered_groups:
+        return registered_groups[network]
     return False
 
 
