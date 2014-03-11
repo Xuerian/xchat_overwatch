@@ -386,10 +386,11 @@ class channel_group:
             if self.auto_list:
                 # Rotate to next
                 if not self.auto_first:
+                    print(modifiers)
                     # Shift-tab
-                    if modifiers == 1:
+                    if modifiers & 1:
                         mod = 1
-                    # Tab or something else?
+                    # Other-tab
                     else:
                         mod = -1
                     self.auto_list_rotate(mod, self.auto_type == 1 and word[0] or nick)
