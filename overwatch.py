@@ -386,7 +386,6 @@ class channel_group:
             if self.auto_list:
                 # Rotate to next
                 if not self.auto_first:
-                    print(modifiers)
                     # Shift-tab
                     if modifiers & 1:
                         mod = 1
