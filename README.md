@@ -7,6 +7,7 @@ Provides buffers which watch and interact with multiple channels
 
 ![Overwatch](https://github.com/Xuerian/xchat_overwatch/raw/master/overwatch_screenshot_random_channels.png)
 
+Note: If you have been using Hexchat for a long time, your config/pevents.conf may be out of date. If you get a key error including events_decoded[event], please try deleting pevents.conf and restarting hexchat. (You can copy over any customizations you made)
 
 Settings are available at the top of the script:
 
