@@ -380,7 +380,7 @@ class channel_group:
                     else:
                         self.auto_list_channels(word[0])
                 # Search nick
-                elif num == 2:
+                elif num == 2 and word[0] in self.chanrefs:
                     self.auto_list_users(self.chanrefs[word[0]][0], self.chanrefs[word[0]][1], nick)
 
             if self.auto_list:
